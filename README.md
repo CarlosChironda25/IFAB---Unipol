@@ -19,23 +19,6 @@ Event Consolidation: Algoritmo di deduplicazione per unire più fonti in un unic
 Interactive Map: Visualizzazione GeoJSON per il filtraggio spaziale dei sinistri.
 
 ## Struttura del Progetto
-IFAB---Unipol/
-├── backend/                # Logica server e elaborazione dati
-│   ├── app/
-│   │   ├── main.py         # Entry point FastAPI e rotte API
-│   │   ├── scraper.py      # Modulo di raccolta dati (NewsAPI/Scraping)
-│   │   ├── ai_processor.py # Integrazione con LLM Gemini per analisi testuale
-│   │   ├── database.py     # Gestione connessione SQLite e SQLAlchemy
-│   │   └── models.py       # Definizione tabelle DB e schemi Pydantic
-│   ├── requirements.txt    # Dipendenze Python
-│   └── .env                # Variabili d'ambiente (API Keys)
-├── frontend/               # Interfaccia Utente (Dashboard)
-│   ├── src/
-│   │   ├── components/     # Componenti React (Mappa Leaflet, Sidebar)
-│   │   └── App.js          # Logica principale del frontend
-│   └── package.json        # Dipendenze Node.js
-└── README.md               # Documentazione del progetto
-
 
 <img width="1398" height="758" alt="image" src="https://github.com/user-attachments/assets/fc5e7fbc-fdf3-4897-a6e9-3511ff0f533b" />
 
