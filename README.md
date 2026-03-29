@@ -9,7 +9,7 @@ Ottimizzare la logistica dei periti sul territorio in base all'intensità dell'e
 
 Ridurre le frodi verificando la coerenza tra il danno dichiarato e i dati geospaziali validati dall'AI.
 
-**Key Features**
+## Key Features
 Data Ingestion: Recupero automatico di news da fonti aperte e scraping locale.
 
 AI Analysis: Estrazione di dati strutturati (luogo, data, entità del danno) tramite Gemini API.
@@ -18,23 +18,21 @@ Event Consolidation: Algoritmo di deduplicazione per unire più fonti in un unic
 
 Interactive Map: Visualizzazione GeoJSON per il filtraggio spaziale dei sinistri.
 
-Struttura del Progetto
-IFAB---Unipol
-├── backend/
+## Struttura del Progetto
+IFAB---Unipol/
+├── backend/                # Logica server e elaborazione dati
 │   ├── app/
-│   │   ├── main.py          # Entry point FastAPI
-│   │   ├── scraper.py       # Logica NewsAPI/Scraping
-│   │   ├── ai_processor.py  # Integrazione Gemini
-│   │   ├── database.py      # Configurazione SQLite/SQLAlchemy
-│   │   └── models.py        # Schemi Pydantic e Tabelle DB
-│   ├── requirements.txt
-│   └── .env                 # API Keys (Gemini, NewsAPI)
-├── frontend/
+│   │   ├── main.py         # Entry point FastAPI e rotte API
+│   │   ├── scraper.py      # Modulo di raccolta dati (NewsAPI/Scraping)
+│   │   ├── ai_processor.py # Integrazione con LLM Gemini per analisi testuale
+│   │   ├── database.py     # Gestione connessione SQLite e SQLAlchemy
+│   │   └── models.py       # Definizione tabelle DB e schemi Pydantic
+│   ├── requirements.txt    # Dipendenze Python
+│   └── .env                # Variabili d'ambiente (API Keys)
+├── frontend/               # Interfaccia Utente (Dashboard)
 │   ├── src/
-│   │   ├── components/      # Mappa e Sidebar
-│   │   └── App.js
-│   ├── package.json
-└── README.md
-
-
+│   │   ├── components/     # Componenti React (Mappa Leaflet, Sidebar)
+│   │   └── App.js          # Logica principale del frontend
+│   └── package.json        # Dipendenze Node.js
+└── README.md               # Documentazione del progetto
 
