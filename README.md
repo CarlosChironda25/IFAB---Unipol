@@ -36,3 +36,6 @@ IFAB---Unipol/
 │   └── package.json        # Dipendenze Node.js
 └── README.md               # Documentazione del progetto
 
+
+<img width="1398" height="758" alt="image" src="https://github.com/user-attachments/assets/fc5e7fbc-fdf3-4897-a6e9-3511ff0f533b" />
+
