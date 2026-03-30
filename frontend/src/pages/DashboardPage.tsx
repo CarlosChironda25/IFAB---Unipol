@@ -124,7 +124,7 @@ export function DashboardPage() {
       <section className="hero">
         <div>
           <span className="eyebrow">Climate event intelligence</span>
-          <h1>Dashboard di consolidamento eventi climatici estremi</h1>
+          <h1>Dashboard monitoraggio eventi climatici estremi</h1>
           <p>
             Mappa interattiva, polling periodico e pannello operativo per unire più articoli in pochi eventi leggibili.
           </p>

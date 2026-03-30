@@ -93,7 +93,7 @@ export function MapView({ events, selectedEventId, onSelect }: MapViewProps) {
           content: createMarkerContent(event, event.id === selectedEventId),
         });
 
-        marker.addListener('click', () => onSelect(event.id));
+        marker.addEventListener('gmp-click', () => onSelect(event.id));
         return marker;
       });
 
