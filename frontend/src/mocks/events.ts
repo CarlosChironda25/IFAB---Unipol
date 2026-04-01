@@ -24,6 +24,7 @@ export const mockEvents: DisasterEvent[] = [
     lastUpdate: '2026-03-30T10:20:00Z',
     severity: 0.82,
     confidence: 0.92,
+    impactRadiusKm: 12,
     sourcesCount: 3,
     status: 'confirmed',
     articles: [
@@ -65,6 +66,7 @@ export const mockEvents: DisasterEvent[] = [
     lastUpdate: '2026-03-29T18:10:00Z',
     severity: 0.67,
     confidence: 0.86,
+    impactRadiusKm: 8,
     sourcesCount: 2,
     status: 'updated',
     articles: [
@@ -109,6 +111,7 @@ export const mockEvents: DisasterEvent[] = [
     lastUpdate: '2026-03-30T09:40:00Z',
     severity: 0.76,
     confidence: 0.88,
+    impactRadiusKm: 14,
     sourcesCount: 3,
     status: 'confirmed',
     articles: [
@@ -150,6 +153,7 @@ export const mockEvents: DisasterEvent[] = [
     lastUpdate: '2026-03-30T11:55:00Z',
     severity: 0.61,
     confidence: 0.79,
+    impactRadiusKm: 10,
     sourcesCount: 2,
     status: 'new',
     articles: [

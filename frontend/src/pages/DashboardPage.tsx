@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
+import { ExposureSummaryPanel } from '../components/operations/ExposureSummaryPanel';
+import { OperationalInsightsPanel } from '../components/operations/OperationalInsightsPanel';
+import { OperationalMapView } from '../components/operations/OperationalMapView';
 import { FilterBar } from '../components/FilterBar';
-import { MapView } from '../components/MapView';
-import { EventSidebar } from '../components/EventSidebar';
+import { buildCustomerImpactAssessments, buildExposureSummary } from '../features/operations/selectors';
+import { useCustomers } from '../hooks/useCustomers';
 import { useEvents } from '../hooks/useEvents';
+import type { CustomerImpactAssessment, MapLayerMode } from '../types/exposure';
 import type { DisasterEvent, EventFilters } from '../types/event';
 
 const initialFilters: EventFilters = {
@@ -72,8 +76,11 @@ se un evento rientra nell'intervallo di date specificato nei filtri. La funzione
 
 export function DashboardPage() {
   const { events, isLoading, isRefreshing, error, lastUpdated } = useEvents();
+  const { customers, isLoading: areCustomersLoading, error: customersError } = useCustomers();
   const [filters, setFilters] = useState<EventFilters>(initialFilters);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [focusedEventId, setFocusedEventId] = useState<string | null>(null);
+  const [mapMode, setMapMode] = useState<MapLayerMode>('event');
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 
   const filteredEvents = useMemo(() => {
     const searchTerm = filters.search.trim().toLowerCase();
@@ -105,28 +112,80 @@ export function DashboardPage() {
 
   useEffect(() => {
     if (!filteredEvents.length) {
-      setSelectedEventId(null);
+      setFocusedEventId(null);
       return;
     }
 
-    const selectedStillVisible = filteredEvents.some((event) => event.id === selectedEventId);
+    const selectedStillVisible = filteredEvents.some((event) => event.id === focusedEventId);
     if (!selectedStillVisible) {
-      setSelectedEventId(filteredEvents[0].id);
+      setFocusedEventId(filteredEvents[0].id);
     }
-  }, [filteredEvents, selectedEventId]);
+  }, [filteredEvents, focusedEventId]);
+
+  useEffect(() => {
+    if (mapMode === 'event') {
+      setSelectedCustomerId(null);
+    }
+  }, [mapMode]);
+
+  useEffect(() => {
+    if (selectedCustomerId && !customers.some((customer) => customer.id === selectedCustomerId)) {
+      setSelectedCustomerId(null);
+    }
+  }, [customers, selectedCustomerId]);
+
+  const focusedEvents = useMemo(
+    () => (focusedEventId ? filteredEvents.filter((event) => event.id === focusedEventId) : filteredEvents),
+    [filteredEvents, focusedEventId]
+  );
+
+  const assessments = useMemo(
+    () => buildCustomerImpactAssessments(customers, focusedEvents),
+    [customers, focusedEvents]
+  );
+
+  const exposureSummary = useMemo(
+    () => buildExposureSummary(customers, assessments),
+    [customers, assessments]
+  );
+
+  const focusedEvent = useMemo(
+    () => filteredEvents.find((event) => event.id === focusedEventId) ?? null,
+    [filteredEvents, focusedEventId]
+  );
+
+  const selectedCustomer = useMemo(
+    () => customers.find((customer) => customer.id === selectedCustomerId) ?? null,
+    [customers, selectedCustomerId]
+  );
+
+  const selectedAssessment = useMemo<CustomerImpactAssessment | null>(
+    () => assessments.find((assessment) => assessment.customerId === selectedCustomerId) ?? null,
+    [assessments, selectedCustomerId]
+  );
+
+  const selectedImpactEvent = useMemo<DisasterEvent | null>(() => {
+    if (!selectedAssessment?.eventId) {
+      return null;
+    }
+
+    return filteredEvents.find((event) => event.id === selectedAssessment.eventId) ?? null;
+  }, [filteredEvents, selectedAssessment]);
 
   const confirmedCount = filteredEvents.filter((event) => event.status === 'confirmed').length;
   const totalSources = filteredEvents.reduce((sum, event) => sum + event.sourcesCount, 0);
   const highestSeverity = filteredEvents[0]?.severity ?? 0;
+  const isInitialLoading = isLoading || areCustomersLoading;
+  const combinedError = error || customersError;
 
   return (
     <main className="dashboard">
       <section className="hero">
         <div>
           <span className="eyebrow">Climate event intelligence</span>
-          <h1>Dashboard monitoraggio eventi climatici estremi</h1>
+          <h1>Dashboard geospaziale di pre-allarme sinistri</h1>
           <p>
-            Mappa interattiva, polling periodico e pannello operativo per unire più articoli in pochi eventi leggibili.
+            Eventi climatici, clienti sul territorio e una prima stima geospaziale delle esposizioni per organizzare il territorio prima delle denunce.
           </p>
         </div>
 
@@ -144,7 +203,7 @@ export function DashboardPage() {
             <strong>{totalSources}</strong>
           </article>
           <article>
-            <span>Picco severità</span>
+            <span>Picco severita</span>
             <strong>{Math.round(highestSeverity * 100)}%</strong>
           </article>
         </div>
@@ -153,19 +212,46 @@ export function DashboardPage() {
       <FilterBar filters={filters} onChange={setFilters} />
 
       <section className="status-strip">
-        <span>{isLoading ? 'Caricamento iniziale eventi...' : 'Feed mock locale sincronizzato.'}</span>
+        <span>{isInitialLoading ? 'Caricamento iniziale scenario...' : 'Eventi e clienti mock sincronizzati.'}</span>
         <span>{isRefreshing ? 'Refresh periodico in corso.' : 'Polling simulato ogni 45 secondi.'}</span>
         <span>
           {lastUpdated
             ? `Ultimo refresh: ${new Date(lastUpdated).toLocaleTimeString('it-IT')}`
             : 'In attesa del primo refresh.'}
         </span>
-        <span>{error ? `Errore feed: ${error}` : 'Eventuali errori di feed'}</span>
+        <span>{combinedError ? `Errore feed: ${combinedError}` : 'Scenario clienti ed eventi pronto per il focus operativo.'}</span>
       </section>
 
       <section className="workspace">
-        <MapView events={filteredEvents} selectedEventId={selectedEventId} onSelect={setSelectedEventId} />
-        <EventSidebar events={filteredEvents} selectedEventId={selectedEventId} onSelect={setSelectedEventId} />
+        <div className="operations-main">
+          <OperationalMapView
+            mode={mapMode}
+            events={focusedEvents}
+            allEvents={filteredEvents}
+            customers={customers}
+            assessments={assessments}
+            focusedEventId={focusedEventId}
+            selectedCustomerId={selectedCustomerId}
+            onModeChange={setMapMode}
+            onFocusedEventChange={setFocusedEventId}
+            onSelectedCustomerChange={setSelectedCustomerId}
+          />
+          <ExposureSummaryPanel
+            mode={mapMode}
+            focusedEvent={focusedEvent}
+            customers={customers}
+            assessments={assessments}
+            summary={exposureSummary}
+            selectedCustomer={selectedCustomer}
+            selectedAssessment={selectedAssessment}
+            selectedImpactEvent={selectedImpactEvent}
+          />
+        </div>
+        <OperationalInsightsPanel
+          events={filteredEvents}
+          selectedEventId={focusedEventId}
+          onSelectEvent={setFocusedEventId}
+        />
       </section>
     </main>
   );

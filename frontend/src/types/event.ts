@@ -34,6 +34,7 @@ export interface DisasterEvent {
   lastUpdate?: string | null;
   severity?: number | null;
   confidence?: number | null;
+  impactRadiusKm?: number | null;
   sourcesCount: number;
   status: EventStatus;
   articles: Article[];
