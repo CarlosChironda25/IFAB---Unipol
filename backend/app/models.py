@@ -14,7 +14,8 @@ class Article(Base):
     source = Column(String)
     content = Column(String)
     published_at = Column(DateTime)
-    
+   # da aggiungere 
+    #linked_event_id = Column(Integer, ForeignKey("events.id"), nullable=True)
     # Relazione con l'evento consolidato
     event_id = Column(Integer, ForeignKey("events.id"), nullable=True)
     event = relationship("Event", back_populates="articles")
@@ -32,7 +33,8 @@ class Event(Base):
     
     # Dati strutturati estratti dall'AI (danni, persone coinvolte)
     damage_info = Column(JSON) 
-    confidence_score = Column(Float)
+    confidence_score = Column(Float) # affidabilità delle info (0.0 a 1.0) da calcolare in base alla quantità e qualità delle fonti
     status = Column(String, default="new") # new, updated, confirmed
     
-    articles = relationship("Article", back_populates="event")print("definizione tabelle DB e schemi Pydantic")
+    articles = relationship("Article", back_populates="event")
+    print("definizione tabelle DB e schemi Pydantic")
