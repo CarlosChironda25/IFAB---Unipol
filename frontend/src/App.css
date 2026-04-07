@@ -417,7 +417,23 @@
   padding: 20px;
 }
 
+.staffing-panel {
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  border-radius: 28px;
+  padding: 20px;
+}
+
 .exposure-summary__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
+.staffing-panel__header {
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -429,7 +445,23 @@
   font-size: 1.35rem;
 }
 
+.staffing-panel__header h2 {
+  margin: 8px 0 0;
+  font-size: 1.35rem;
+}
+
 .exposure-summary__mode {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(19, 34, 56, 0.08);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.staffing-panel__scope {
   display: inline-flex;
   align-items: center;
   min-height: 38px;
@@ -452,8 +484,24 @@
   margin-bottom: 16px;
 }
 
+.staffing-panel__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 16px;
+}
+
 .exposure-summary__stats article,
 .exposure-summary__card {
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(19, 34, 56, 0.08);
+  padding: 16px;
+}
+
+.staffing-panel__stats article,
+.staffing-panel__target,
+.staffing-panel__card {
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(19, 34, 56, 0.08);
@@ -465,7 +513,19 @@
   color: var(--muted);
 }
 
+.staffing-panel__stats span,
+.staffing-panel__card p,
+.staffing-panel__meta {
+  color: var(--muted);
+}
+
 .exposure-summary__stats strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.5rem;
+}
+
+.staffing-panel__stats strong {
   display: block;
   margin-top: 6px;
   font-size: 1.5rem;
@@ -476,9 +536,35 @@
   gap: 12px;
 }
 
+.staffing-panel__targets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.staffing-panel__body {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .exposure-summary__card h3 {
   margin: 0 0 8px;
   font-size: 1rem;
+}
+
+.staffing-panel__target h3,
+.staffing-panel__card h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.staffing-panel__meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .marker-detail {
@@ -744,6 +830,11 @@
     grid-template-columns: 1fr;
   }
 
+  .staffing-panel__stats,
+  .staffing-panel__body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .map-canvas,
   .map-shell {
     min-height: 56vh;
@@ -766,6 +857,9 @@
   }
 
   .hero-stats,
+  .staffing-panel__stats,
+  .staffing-panel__targets,
+  .staffing-panel__body,
   .exposure-summary__stats,
   .detail-metrics,
   .event-details__meta,
