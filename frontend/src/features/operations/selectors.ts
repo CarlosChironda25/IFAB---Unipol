@@ -3,6 +3,18 @@ import type { DisasterEvent, EventGeometry } from '../../types/event';
 
 export const DEFAULT_IMPACT_RADIUS_KM = 8;
 
+export function getVulnerabilityWeight(vulnerabilityHint: VulnerabilityHint): number {
+  if (vulnerabilityHint === 'high') {
+    return 1.3;
+  }
+
+  if (vulnerabilityHint === 'low') {
+    return 0.7;
+  }
+
+  return 1;
+}
+
 function haversineDistanceKm(
   first: { lat: number; lng: number },
   second: { lat: number; lng: number }
@@ -156,6 +168,10 @@ export function buildExposureSummary(
     customersInScope: customers.length,
     impactedCustomers: impactedCustomers.length,
     impactedInspectionAreaSqm: impactedCustomers.reduce((sum, customer) => sum + customer.inspectionAreaSqm, 0),
+    weightedInspectionAreaSqm: impactedCustomers.reduce((sum, customer) => {
+      const assessment = assessmentsByCustomerId.get(customer.id);
+      return sum + customer.inspectionAreaSqm * getVulnerabilityWeight(assessment?.vulnerabilityHint ?? 'medium');
+    }, 0),
     highVulnerabilityCustomers: impactedCustomers.filter(
       (customer) => assessmentsByCustomerId.get(customer.id)?.vulnerabilityHint === 'high'
     ).length,

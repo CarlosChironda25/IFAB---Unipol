@@ -2,10 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { ExposureSummaryPanel } from '../components/operations/ExposureSummaryPanel';
 import { OperationalInsightsPanel } from '../components/operations/OperationalInsightsPanel';
 import { OperationalMapView } from '../components/operations/OperationalMapView';
+import { StaffingRecommendationPanel } from '../components/operations/StaffingRecommendationPanel';
 import { FilterBar } from '../components/FilterBar';
 import { buildCustomerImpactAssessments, buildExposureSummary } from '../features/operations/selectors';
+import { buildStaffingRecommendation } from '../features/operations/staffingSelectors';
 import { useCustomers } from '../hooks/useCustomers';
 import { useEvents } from '../hooks/useEvents';
+import { useSurveyors } from '../hooks/useSurveyors';
 import type { CustomerImpactAssessment, MapLayerMode } from '../types/exposure';
 import type { DisasterEvent, EventFilters } from '../types/event';
 
@@ -77,6 +80,7 @@ se un evento rientra nell'intervallo di date specificato nei filtri. La funzione
 export function DashboardPage() {
   const { events, isLoading, isRefreshing, error, lastUpdated } = useEvents();
   const { customers, isLoading: areCustomersLoading, error: customersError } = useCustomers();
+  const { surveyors, isLoading: areSurveyorsLoading, error: surveyorsError } = useSurveyors();
   const [filters, setFilters] = useState<EventFilters>(initialFilters);
   const [focusedEventId, setFocusedEventId] = useState<string | null>(null);
   const [mapMode, setMapMode] = useState<MapLayerMode>('event');
@@ -116,9 +120,8 @@ export function DashboardPage() {
       return;
     }
 
-    const selectedStillVisible = filteredEvents.some((event) => event.id === focusedEventId);
-    if (!selectedStillVisible) {
-      setFocusedEventId(filteredEvents[0].id);
+    if (focusedEventId && !filteredEvents.some((event) => event.id === focusedEventId)) {
+      setFocusedEventId(null);
     }
   }, [filteredEvents, focusedEventId]);
 
@@ -172,11 +175,16 @@ export function DashboardPage() {
     return filteredEvents.find((event) => event.id === selectedAssessment.eventId) ?? null;
   }, [filteredEvents, selectedAssessment]);
 
+  const staffingRecommendation = useMemo(
+    () => buildStaffingRecommendation(customers, assessments, surveyors, focusedEvent, filteredEvents),
+    [assessments, customers, filteredEvents, focusedEvent, surveyors]
+  );
+
   const confirmedCount = filteredEvents.filter((event) => event.status === 'confirmed').length;
   const totalSources = filteredEvents.reduce((sum, event) => sum + event.sourcesCount, 0);
   const highestSeverity = filteredEvents[0]?.severity ?? 0;
-  const isInitialLoading = isLoading || areCustomersLoading;
-  const combinedError = error || customersError;
+  const isInitialLoading = isLoading || areCustomersLoading || areSurveyorsLoading;
+  const combinedError = error || customersError || surveyorsError;
 
   return (
     <main className="dashboard">
@@ -245,6 +253,10 @@ export function DashboardPage() {
             selectedCustomer={selectedCustomer}
             selectedAssessment={selectedAssessment}
             selectedImpactEvent={selectedImpactEvent}
+          />
+          <StaffingRecommendationPanel
+            focusedEvent={focusedEvent}
+            recommendation={staffingRecommendation}
           />
         </div>
         <OperationalInsightsPanel
