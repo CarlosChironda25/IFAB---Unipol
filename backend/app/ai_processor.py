@@ -21,7 +21,7 @@ except Exception as e:
     print(f"ERRORE INIZIALIZZAZIONE: {e}")
 
 # Usa il nome del modello senza il prefisso 'models/'
-model = genai.GenerativeModel('models/gemini-2.0-flash-001')
+model = genai.GenerativeModel('models/gemma-3-4b-it')
 
 def extract_event_data(article_text: str):
     try:

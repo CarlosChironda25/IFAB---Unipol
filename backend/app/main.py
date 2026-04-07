@@ -1,24 +1,40 @@
 import os
 from pathlib import Path
 import time
+
+from fastapi.concurrency import asynccontextmanager
 from dotenv import load_dotenv
 # Caricamento ENV in cima a tutto
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-from fastapi import FastAPI, Depends, BackgroundTasks
+from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from .database import SessionLocal, init_db, get_db
 from .scraper import fetch_weather_news, scrape_article_content
 from .ai_processor import extract_event_data, get_coordinates
-from .models import Article, Event
+from .models import Article, Event, User
 import uvicorn
 
-app = FastAPI(title="Extreme Weather Intelligence Platform")
-
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
     init_db()
+    yield
+    # Shutdown
+    # cleanup code
+
+app = FastAPI(title="Extreme Weather Intelligence Platform")
+'''app.add_middleware(
+   # CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_crendentials=True,
+) ''' 
+
+
 
 @app.get("/")
 def read_root():
@@ -75,6 +91,21 @@ def run_ingestion(db: Session = Depends(get_db)):
 
     return {"status": "completed", "events_created": count}
 
+@app.post("/create-test-users")
+def create_test_users(db: Session = Depends(get_db)):
+    users = [
+        User(full_name="Mario Rossi",  latitude=44.525696, longitude=11.039437, policy_type="Auto", policy_number="POL-001"),
+        User(full_name="Giuseppe Verdi", latitude=44.470, longitude=11.280, policy_type="Casa", policy_number="POL-002"),
+    ]
+    db.add_all(users)
+    db.commit()
+    return {"status": "Utenti creati"}
+
+# endpoit per recureare utenti 
+@app.get("/customers")
+def get_users(db: Session = Depends(get_db)):
+    return db.query(User).all()
+#endpoint per recuperare eventi
 @app.get("/events")
 def get_events(db: Session = Depends(get_db)):
     return db.query(Event).all()
