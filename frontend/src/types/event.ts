@@ -2,8 +2,13 @@ export type EventType =
   | 'flood'
   | 'storm'
   | 'hail'
+  | 'tornado'
   | 'earthquake'
   | 'wildfire'
+  | 'drought'
+  | 'blizzard'
+  | 'heatwave'
+  | 'coldwave'
   | 'unknown';
 
 export type EventStatus = 'new' | 'updated' | 'confirmed';

@@ -9,7 +9,7 @@ import { buildStaffingRecommendation } from '../features/operations/staffingSele
 import { useCustomers } from '../hooks/useCustomers';
 import { useEvents } from '../hooks/useEvents';
 import { useSurveyors } from '../hooks/useSurveyors';
-import type { CustomerImpactAssessment, MapLayerMode } from '../types/exposure';
+import type { CustomerImpactAssessment, DamageScenario, MapLayerMode } from '../types/exposure';
 import type { DisasterEvent, EventFilters } from '../types/event';
 
 const initialFilters: EventFilters = {
@@ -85,6 +85,7 @@ export function DashboardPage() {
   const [focusedEventId, setFocusedEventId] = useState<string | null>(null);
   const [mapMode, setMapMode] = useState<MapLayerMode>('event');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [damageScenario, setDamageScenario] = useState<DamageScenario>('scenario-b');
 
   const filteredEvents = useMemo(() => {
     const searchTerm = filters.search.trim().toLowerCase();
@@ -176,8 +177,8 @@ export function DashboardPage() {
   }, [filteredEvents, selectedAssessment]);
 
   const staffingRecommendation = useMemo(
-    () => buildStaffingRecommendation(customers, assessments, surveyors, focusedEvent, filteredEvents),
-    [assessments, customers, filteredEvents, focusedEvent, surveyors]
+    () => buildStaffingRecommendation(customers, assessments, surveyors, focusedEvent, filteredEvents, damageScenario),
+    [assessments, customers, damageScenario, filteredEvents, focusedEvent, surveyors]
   );
 
   const confirmedCount = filteredEvents.filter((event) => event.status === 'confirmed').length;
@@ -257,6 +258,8 @@ export function DashboardPage() {
           <StaffingRecommendationPanel
             focusedEvent={focusedEvent}
             recommendation={staffingRecommendation}
+            damageScenario={damageScenario}
+            onDamageScenarioChange={setDamageScenario}
           />
         </div>
         <OperationalInsightsPanel

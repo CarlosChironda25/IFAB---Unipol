@@ -1,4 +1,4 @@
-import type { StaffingAssignment, StaffingRecommendation } from '../../types/exposure';
+import type { DamageScenario, StaffingAssignment, StaffingRecommendation } from '../../types/exposure';
 import type { DisasterEvent } from '../../types/event';
 
 /*
@@ -9,7 +9,15 @@ Mostra quanti periti servono, quali interni coprono gia il territorio e dove sca
 interface StaffingRecommendationPanelProps {
   focusedEvent: DisasterEvent | null;
   recommendation: StaffingRecommendation;
+  damageScenario: DamageScenario;
+  onDamageScenarioChange: (scenario: DamageScenario) => void;
 }
+
+const damageScenarios: Array<{ id: DamageScenario; label: string; helper: string }> = [
+  { id: 'scenario-a', label: 'Scenario A', helper: 'Acqua confinata a interrati e pertinenze.' },
+  { id: 'scenario-b', label: 'Scenario B', helper: 'Acqua al piano terra fino a circa 30-50 cm.' },
+  { id: 'scenario-c', label: 'Scenario C', helper: 'Sommersione importante del piano terra e risalita ai piani.' },
+];
 
 function renderAssignments(title: string, assignments: StaffingAssignment[], emptyMessage: string) {
   return (
@@ -39,9 +47,12 @@ function renderAssignments(title: string, assignments: StaffingAssignment[], emp
 export function StaffingRecommendationPanel({
   focusedEvent,
   recommendation,
+  damageScenario,
+  onDamageScenarioChange,
 }: StaffingRecommendationPanelProps) {
   const target7 = recommendation.targets.find((target) => target.targetDays === 7);
   const target15 = recommendation.targets.find((target) => target.targetDays === 15);
+  const activeScenario = damageScenarios.find((scenario) => scenario.id === damageScenario);
 
   return (
     <section className="staffing-panel">
@@ -53,14 +64,35 @@ export function StaffingRecommendationPanel({
         <span className="staffing-panel__scope">{focusedEvent ? focusedEvent.title : 'Scenario aggregato'}</span>
       </div>
 
+      <div className="staffing-panel__scenario">
+        <div className="staffing-panel__scenario-switch">
+          {damageScenarios.map((scenario) => (
+            <button
+              key={scenario.id}
+              type="button"
+              className={`staffing-panel__scenario-button ${
+                scenario.id === damageScenario ? 'staffing-panel__scenario-button--active' : ''
+              }`}
+              onClick={() => onDamageScenarioChange(scenario.id)}
+            >
+              {scenario.label}
+            </button>
+          ))}
+        </div>
+        <p>{activeScenario?.helper}</p>
+        <p className="staffing-panel__formula">
+          Formula mock: W = sum((Ai/100) * Ktipo) + N * mudist, con G = 7/15 gg, H = 8 h, phi = 0.7, mudist = 0.33 h e Cp = 650 EUR.
+        </p>
+      </div>
+
       <div className="staffing-panel__stats">
         <article>
           <span>Clienti impattati</span>
           <strong>{recommendation.impactedCustomers}</strong>
         </article>
         <article>
-          <span>Metratura ponderata</span>
-          <strong>{Math.round(recommendation.weightedInspectionAreaSqm)} mq</strong>
+          <span>Carico W stimato</span>
+          <strong>{recommendation.workloadHours.toFixed(1)} h</strong>
         </article>
         <article>
           <span>Periti necessari 7 gg</span>
@@ -69,6 +101,22 @@ export function StaffingRecommendationPanel({
         <article>
           <span>Periti necessari 15 gg</span>
           <strong>{target15?.requiredSurveyors ?? 0}</strong>
+        </article>
+        <article>
+          <span>Danno stimato DS</span>
+          <strong>{Math.round(recommendation.estimatedDamageAmount).toLocaleString('it-IT')} €</strong>
+        </article>
+        <article>
+          <span>Risparmio stimato R</span>
+          <strong>{Math.round(recommendation.estimatedSavingsAmount).toLocaleString('it-IT')} €</strong>
+        </article>
+        <article>
+          <span>Metratura reale</span>
+          <strong>{Math.round(recommendation.impactedInspectionAreaSqm)} mq</strong>
+        </article>
+        <article>
+          <span>Metratura ponderata</span>
+          <strong>{Math.round(recommendation.weightedInspectionAreaSqm)} mq</strong>
         </article>
       </div>
 

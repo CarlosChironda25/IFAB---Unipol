@@ -1,6 +1,7 @@
 import type {
   Customer,
   CustomerImpactAssessment,
+  DamageScenario,
   StaffingAssignment,
   StaffingRecommendation,
   StaffingTargetRecommendation,
@@ -12,11 +13,19 @@ import { getVulnerabilityWeight } from './selectors';
 
 /*
 Il modulo staffingSelectors traduce l esposizione geospaziale in un primo piano operativo per i periti.
-Stima i fabbisogni a 7 e 15 giorni e costruisce una priorita di assegnazione tra interni in zona, riallocazioni e outsourcing.
+Applica la formula di workload del task, stima danno e risparmio in scenario A/B/C e ordina la copertura tra interni in zona, riallocazioni e outsourcing.
 */
 
-const STANDARD_DAILY_CAPACITY_SQM = 120;
+const TARGET_DAYS_SHORT = 7;
+const TARGET_DAYS_LONG = 15;
+const WORK_HOURS_PER_DAY = 8;
+const SURVEYOR_EFFICIENCY = 0.7;
+const AVERAGE_TRAVEL_HOURS = 0.33;
+const SURVEYOR_DAILY_COST = 650;
+const BUSINESS_INTERRUPTION_SAVINGS_FACTOR = 0.25;
 const LOCAL_ZONE_RADIUS_KM = 75;
+
+type DamageLevel = 'underground' | 'ground' | 'upper';
 
 function haversineDistanceKm(
   first: { lat: number; lng: number },
@@ -72,6 +81,132 @@ function getScenarioCenter(
     lat: firstEventWithCoords.latitude as number,
     lng: firstEventWithCoords.longitude as number,
   };
+}
+
+function getWorkloadCoefficient(customer: Customer): number {
+  if (customer.assetType === 'warehouse') {
+    return 0.8;
+  }
+
+  if (customer.assetType === 'shop' || customer.assetType === 'office') {
+    return 1.5;
+  }
+
+  return 2;
+}
+
+function getSavingsCoefficient(customer: Customer): number {
+  if (customer.assetType === 'shop' || customer.assetType === 'office' || customer.assetType === 'warehouse') {
+    return 0.5;
+  }
+
+  return 0.3;
+}
+
+function getDamageShares(customer: Customer): Array<{ level: DamageLevel; share: number }> {
+  const mainResidentialLevel: DamageLevel = customer.floorLevel >= 1 ? 'upper' : 'ground';
+
+  if (customer.assetType === 'apartment') {
+    if (customer.hasBasement || customer.hasUndergroundStorage) {
+      return [
+        { level: mainResidentialLevel, share: 0.85 },
+        { level: 'underground', share: 0.15 },
+      ];
+    }
+
+    return [{ level: mainResidentialLevel, share: 1 }];
+  }
+
+  if (customer.assetType === 'house') {
+    if (customer.hasBasement || customer.hasUndergroundStorage) {
+      return [
+        { level: 'ground', share: 0.5 },
+        { level: 'upper', share: 0.35 },
+        { level: 'underground', share: 0.15 },
+      ];
+    }
+
+    return [
+      { level: 'ground', share: 0.65 },
+      { level: 'upper', share: 0.35 },
+    ];
+  }
+
+  if (customer.assetType === 'warehouse') {
+    if (customer.hasBasement || customer.hasUndergroundStorage) {
+      return [
+        { level: 'underground', share: 0.5 },
+        { level: 'ground', share: 0.5 },
+      ];
+    }
+
+    return [{ level: 'ground', share: 1 }];
+  }
+
+  if (customer.hasBasement || customer.hasUndergroundStorage) {
+    return [
+      { level: 'underground', share: 0.15 },
+      { level: 'ground', share: 0.7 },
+      { level: 'upper', share: 0.15 },
+    ];
+  }
+
+  return [
+    { level: 'ground', share: 0.85 },
+    { level: 'upper', share: 0.15 },
+  ];
+}
+
+function getScenarioDamageProbability(level: DamageLevel, scenario: DamageScenario): number {
+  if (scenario === 'scenario-a') {
+    if (level === 'underground') {
+      return 0.8;
+    }
+
+    if (level === 'ground') {
+      return 0.2;
+    }
+
+    return 0;
+  }
+
+  if (scenario === 'scenario-b') {
+    if (level === 'underground') {
+      return 0.95;
+    }
+
+    if (level === 'ground') {
+      return 0.7;
+    }
+
+    return 0.05;
+  }
+
+  if (level === 'underground') {
+    return 1;
+  }
+
+  if (level === 'ground') {
+    return 0.95;
+  }
+
+  return 0.5;
+}
+
+function estimatePropertyDamage(customer: Customer, scenario: DamageScenario): number {
+  const damageRatio = getDamageShares(customer).reduce((sum, share) => {
+    return sum + share.share * getScenarioDamageProbability(share.level, scenario);
+  }, 0);
+
+  return customer.maxCoverageAmount * damageRatio;
+}
+
+function estimatePropertySavings(customer: Customer, estimatedDamage: number): number {
+  const mitigationSavings = estimatedDamage * getSavingsCoefficient(customer);
+  const interruptionSavings =
+    customer.businessInterruptionDaily * BUSINESS_INTERRUPTION_SAVINGS_FACTOR * TARGET_DAYS_SHORT;
+
+  return mitigationSavings + interruptionSavings;
 }
 
 function buildAssignment(
@@ -130,7 +265,8 @@ export function buildStaffingRecommendation(
   assessments: CustomerImpactAssessment[],
   surveyors: Surveyor[],
   focusedEvent: DisasterEvent | null,
-  events: DisasterEvent[]
+  events: DisasterEvent[],
+  damageScenario: DamageScenario
 ): StaffingRecommendation {
   const assessmentsByCustomerId = new Map(assessments.map((assessment) => [assessment.customerId, assessment]));
   const impactedCustomers = customers.filter((customer) => assessmentsByCustomerId.get(customer.id)?.isImpacted);
@@ -138,12 +274,21 @@ export function buildStaffingRecommendation(
     const assessment = assessmentsByCustomerId.get(customer.id);
     return sum + customer.inspectionAreaSqm * getVulnerabilityWeight(assessment?.vulnerabilityHint ?? 'medium');
   }, 0);
+  const impactedInspectionAreaSqm = impactedCustomers.reduce((sum, customer) => sum + customer.inspectionAreaSqm, 0);
+  const workloadHours =
+    impactedCustomers.reduce((sum, customer) => {
+      return sum + (customer.inspectionAreaSqm / 100) * getWorkloadCoefficient(customer);
+    }, 0) +
+    impactedCustomers.length * AVERAGE_TRAVEL_HOURS;
 
   if (!impactedCustomers.length) {
     return {
       impactedCustomers: 0,
       impactedInspectionAreaSqm: 0,
       weightedInspectionAreaSqm: 0,
+      workloadHours: 0,
+      estimatedDamageAmount: 0,
+      estimatedSavingsAmount: 0,
       internalInZone: 0,
       internalRelocatable: 0,
       externalAvailable: surveyors.filter((surveyor) => surveyor.kind === 'external').length,
@@ -152,7 +297,7 @@ export function buildStaffingRecommendation(
       suggestedOutsourcingAssignments: [],
       targets: [
         {
-          targetDays: 7,
+          targetDays: TARGET_DAYS_SHORT,
           requiredSurveyors: 0,
           coveredByLocal: 0,
           coveredByRelocation: 0,
@@ -160,7 +305,7 @@ export function buildStaffingRecommendation(
           shortfall: 0,
         },
         {
-          targetDays: 15,
+          targetDays: TARGET_DAYS_LONG,
           requiredSurveyors: 0,
           coveredByLocal: 0,
           coveredByRelocation: 0,
@@ -172,11 +317,32 @@ export function buildStaffingRecommendation(
   }
 
   const scenarioCenter = getScenarioCenter(impactedCustomers, focusedEvent, events);
+  const estimatedDamageAmount = impactedCustomers.reduce((sum, customer) => {
+    return sum + estimatePropertyDamage(customer, damageScenario);
+  }, 0);
+  const requiredSurveyors7 = Math.max(
+    1,
+    Math.ceil(workloadHours / (TARGET_DAYS_SHORT * WORK_HOURS_PER_DAY * SURVEYOR_EFFICIENCY))
+  );
+  const requiredSurveyors15 = Math.max(
+    1,
+    Math.ceil(workloadHours / (TARGET_DAYS_LONG * WORK_HOURS_PER_DAY * SURVEYOR_EFFICIENCY))
+  );
+  const estimatedSavingsAmount =
+    impactedCustomers.reduce((sum, customer) => {
+      const propertyDamage = estimatePropertyDamage(customer, damageScenario);
+      return sum + estimatePropertySavings(customer, propertyDamage);
+    }, 0) -
+    requiredSurveyors7 * TARGET_DAYS_SHORT * SURVEYOR_DAILY_COST;
+
   if (!scenarioCenter) {
     return {
       impactedCustomers: impactedCustomers.length,
-      impactedInspectionAreaSqm: impactedCustomers.reduce((sum, customer) => sum + customer.inspectionAreaSqm, 0),
+      impactedInspectionAreaSqm,
       weightedInspectionAreaSqm,
+      workloadHours,
+      estimatedDamageAmount,
+      estimatedSavingsAmount,
       internalInZone: 0,
       internalRelocatable: 0,
       externalAvailable: 0,
@@ -185,20 +351,20 @@ export function buildStaffingRecommendation(
       suggestedOutsourcingAssignments: [],
       targets: [
         {
-          targetDays: 7,
-          requiredSurveyors: 0,
+          targetDays: TARGET_DAYS_SHORT,
+          requiredSurveyors: requiredSurveyors7,
           coveredByLocal: 0,
           coveredByRelocation: 0,
           coveredByOutsourcing: 0,
-          shortfall: 0,
+          shortfall: requiredSurveyors7,
         },
         {
-          targetDays: 15,
-          requiredSurveyors: 0,
+          targetDays: TARGET_DAYS_LONG,
+          requiredSurveyors: requiredSurveyors15,
           coveredByLocal: 0,
           coveredByRelocation: 0,
           coveredByOutsourcing: 0,
-          shortfall: 0,
+          shortfall: requiredSurveyors15,
         },
       ],
     };
@@ -231,25 +397,40 @@ export function buildStaffingRecommendation(
     .filter((assignment) => assignment.priority === 'outsourcing')
     .sort((left, right) => left.costIndex - right.costIndex || left.travelDays - right.travelDays);
 
-  const requiredSurveyors7 = Math.max(1, Math.ceil(weightedInspectionAreaSqm / (STANDARD_DAILY_CAPACITY_SQM * 7)));
-  const requiredSurveyors15 = Math.max(1, Math.ceil(weightedInspectionAreaSqm / (STANDARD_DAILY_CAPACITY_SQM * 15)));
-
   return {
     impactedCustomers: impactedCustomers.length,
-    impactedInspectionAreaSqm: impactedCustomers.reduce((sum, customer) => sum + customer.inspectionAreaSqm, 0),
+    impactedInspectionAreaSqm,
     weightedInspectionAreaSqm,
+    workloadHours,
+    estimatedDamageAmount,
+    estimatedSavingsAmount,
     internalInZone: localAssignments.length,
     internalRelocatable: relocationAssignments.length,
     externalAvailable: outsourcingAssignments.length,
     suggestedLocalAssignments: localAssignments.slice(0, requiredSurveyors7),
-    suggestedRelocationAssignments: relocationAssignments.slice(0, Math.max(requiredSurveyors7 - localAssignments.length, 0)),
+    suggestedRelocationAssignments: relocationAssignments.slice(
+      0,
+      Math.max(requiredSurveyors7 - localAssignments.length, 0)
+    ),
     suggestedOutsourcingAssignments: outsourcingAssignments.slice(
       0,
       Math.max(requiredSurveyors7 - localAssignments.length - relocationAssignments.length, 0)
     ),
     targets: [
-      buildTargetRecommendation(7, requiredSurveyors7, localAssignments, relocationAssignments, outsourcingAssignments),
-      buildTargetRecommendation(15, requiredSurveyors15, localAssignments, relocationAssignments, outsourcingAssignments),
+      buildTargetRecommendation(
+        TARGET_DAYS_SHORT,
+        requiredSurveyors7,
+        localAssignments,
+        relocationAssignments,
+        outsourcingAssignments
+      ),
+      buildTargetRecommendation(
+        TARGET_DAYS_LONG,
+        requiredSurveyors15,
+        localAssignments,
+        relocationAssignments,
+        outsourcingAssignments
+      ),
     ],
   };
 }

@@ -6,7 +6,20 @@ interface FilterBarProps {
   onChange: (nextFilters: EventFilters) => void;
 }
 
-const eventTypes: Array<EventType | 'all'> = ['all', 'flood', 'storm', 'hail', 'earthquake', 'wildfire', 'unknown'];
+const eventTypes: Array<EventType | 'all'> = [
+  'all',
+  'flood',
+  'storm',
+  'hail',
+  'tornado',
+  'earthquake',
+  'wildfire',
+  'drought',
+  'blizzard',
+  'heatwave',
+  'coldwave',
+  'unknown',
+];
 const eventStatuses: Array<EventStatus | 'all'> = ['all', 'new', 'updated', 'confirmed'];
 
 /*

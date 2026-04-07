@@ -15,6 +15,8 @@ export const mockCustomers: Customer[] = [
     city: 'Bologna',
     province: 'BO',
     region: 'Emilia-Romagna',
+    maxCoverageAmount: 820000,
+    businessInterruptionDaily: 1800,
   },
   {
     id: 'cus_2',
@@ -30,6 +32,8 @@ export const mockCustomers: Customer[] = [
     city: 'Bologna',
     province: 'BO',
     region: 'Emilia-Romagna',
+    maxCoverageAmount: 240000,
+    businessInterruptionDaily: 0,
   },
   {
     id: 'cus_3',
@@ -45,8 +49,10 @@ export const mockCustomers: Customer[] = [
     city: 'Bologna',
     province: 'BO',
     region: 'Emilia-Romagna',
+    maxCoverageAmount: 610000,
+    businessInterruptionDaily: 2100,
   },
-    {
+  {
     id: 'cus_11',
     policyId: 'POL-BO-004',
     code: 'CLI-BO-004',
@@ -60,8 +66,10 @@ export const mockCustomers: Customer[] = [
     city: 'Bologna',
     province: 'BO',
     region: 'Emilia-Romagna',
+    maxCoverageAmount: 590000,
+    businessInterruptionDaily: 1950,
   },
-      {
+  {
     id: 'cus_12',
     policyId: 'POL-BO-005',
     code: 'CLI-BO-005',
@@ -75,6 +83,8 @@ export const mockCustomers: Customer[] = [
     city: 'Bologna',
     province: 'BO',
     region: 'Emilia-Romagna',
+    maxCoverageAmount: 260000,
+    businessInterruptionDaily: 0,
   },
   {
     id: 'cus_4',
@@ -90,6 +100,8 @@ export const mockCustomers: Customer[] = [
     city: 'Verona',
     province: 'VR',
     region: 'Veneto',
+    maxCoverageAmount: 310000,
+    businessInterruptionDaily: 0,
   },
   {
     id: 'cus_5',
@@ -105,6 +117,8 @@ export const mockCustomers: Customer[] = [
     city: 'Verona',
     province: 'VR',
     region: 'Veneto',
+    maxCoverageAmount: 430000,
+    businessInterruptionDaily: 1250,
   },
   {
     id: 'cus_6',
@@ -120,6 +134,8 @@ export const mockCustomers: Customer[] = [
     city: 'Nuoro',
     province: 'NU',
     region: 'Sardegna',
+    maxCoverageAmount: 290000,
+    businessInterruptionDaily: 0,
   },
   {
     id: 'cus_7',
@@ -135,6 +151,8 @@ export const mockCustomers: Customer[] = [
     city: 'Nuoro',
     province: 'NU',
     region: 'Sardegna',
+    maxCoverageAmount: 560000,
+    businessInterruptionDaily: 1650,
   },
   {
     id: 'cus_8',
@@ -150,6 +168,8 @@ export const mockCustomers: Customer[] = [
     city: 'Bari',
     province: 'BA',
     region: 'Puglia',
+    maxCoverageAmount: 380000,
+    businessInterruptionDaily: 950,
   },
   {
     id: 'cus_9',
@@ -165,6 +185,8 @@ export const mockCustomers: Customer[] = [
     city: 'Bari',
     province: 'BA',
     region: 'Puglia',
+    maxCoverageAmount: 470000,
+    businessInterruptionDaily: 1350,
   },
   {
     id: 'cus_10',
@@ -180,5 +202,7 @@ export const mockCustomers: Customer[] = [
     city: 'Firenze',
     province: 'FI',
     region: 'Toscana',
+    maxCoverageAmount: 220000,
+    businessInterruptionDaily: 0,
   },
 ];

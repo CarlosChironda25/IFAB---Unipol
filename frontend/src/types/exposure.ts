@@ -6,6 +6,8 @@ export type ImpactReason = 'within-geojson' | 'within-radius' | 'not-impacted';
 
 export type VulnerabilityHint = 'low' | 'medium' | 'high';
 
+export type DamageScenario = 'scenario-a' | 'scenario-b' | 'scenario-c';
+
 export type SurveyorKind = 'internal' | 'external';
 
 export type SurveyorMobility = 'local' | 'regional' | 'national';
@@ -26,6 +28,8 @@ export interface Customer {
   city: string;
   province: string;
   region: string;
+  maxCoverageAmount: number;
+  businessInterruptionDaily: number;
 }
 
 export interface CustomerImpactAssessment {
@@ -88,6 +92,9 @@ export interface StaffingRecommendation {
   impactedCustomers: number;
   impactedInspectionAreaSqm: number;
   weightedInspectionAreaSqm: number;
+  workloadHours: number;
+  estimatedDamageAmount: number;
+  estimatedSavingsAmount: number;
   internalInZone: number;
   internalRelocatable: number;
   externalAvailable: number;

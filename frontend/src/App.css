@@ -472,6 +472,39 @@
   font-weight: 700;
 }
 
+.staffing-panel__scenario {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 10px;
+}
+
+.staffing-panel__scenario p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.staffing-panel__scenario-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.staffing-panel__scenario-button {
+  border: 1px solid rgba(19, 34, 56, 0.1);
+  background: rgba(255, 255, 255, 0.66);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.staffing-panel__scenario-button--active {
+  background: #132238;
+  color: #fff;
+  border-color: #132238;
+}
+
 .exposure-summary__scope {
   margin: 14px 0 16px;
   color: var(--muted);
