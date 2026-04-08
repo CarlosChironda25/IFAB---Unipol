@@ -46,6 +46,7 @@ Crea il file `backend/.env` con almeno:
 GEMINI_API_KEY=la_tua_chiave
 BRAVE_SEARCH_API_KEY=la_tua_chiave
 NEWS_API_KEY=la_tua_chiave
+GOOGLE_MAPS_API_KEY=la_tua_chiave
 ```
 
 Controllo rapido:
@@ -63,7 +64,7 @@ curl -X POST "http://127.0.0.1:8000/create-test-users?count=1000&reset_existing=
 Per rigenerare gli eventi da zero:
 ```bash
 sqlite3 backend/weather_events.db "DELETE FROM articles; DELETE FROM events;"
-curl -X POST "http://127.0.0.1:8000/run-ingestion?max_candidates=12&max_new_events=5"
+curl -X POST "http://127.0.0.1:8000/run-ingestion?days_back=31&max_candidates=15&max_new_events=5"
 ```
 
 Verifica:
