@@ -28,7 +28,8 @@ Interactive Map: Visualizzazione GeoJSON per il filtraggio spaziale dei sinistri
 - Node.js 18+
 - Python 3.11+ o compatibile
 - una chiave `GEMINI_API_KEY`
-- una chiave `NEWS_API_KEY`
+- una chiave `BRAVE_SEARCH_API_KEY` consigliata
+- opzionale: una chiave `NEWS_API_KEY` come fallback
 - opzionale: `VITE_GOOGLE_MAPS_API_KEY` e `VITE_GOOGLE_MAP_ID` per la mappa Google reale
 
 ### 1. Avvio backend
@@ -43,6 +44,7 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 Crea il file `backend/.env` con almeno:
 ```env
 GEMINI_API_KEY=la_tua_chiave
+BRAVE_SEARCH_API_KEY=la_tua_chiave
 NEWS_API_KEY=la_tua_chiave
 ```
 
@@ -97,6 +99,6 @@ Usa due terminali:
 Il frontend usa il backend reale se `VITE_API_BASE_URL` è configurata. In caso contrario usa i mock locali.
 
 ## Note Operative
-- La pipeline eventi è al momento focalizzata su articoli ANSA.
+- La pipeline eventi usa Brave Search come sorgente primaria e NewsAPI come fallback, filtrando poi articoli ANSA e cronaca concreta.
 - Gli eventi troppo vaghi dal punto di vista geografico vengono scartati.
 - I clienti e i periti sono ancora in parte mock, a seconda degli endpoint backend disponibili.

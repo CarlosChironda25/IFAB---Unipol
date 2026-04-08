@@ -30,6 +30,8 @@ interface BackendEvent {
   status?: DisasterEvent['status'] | null;
   impact_radius_km?: number | null;
   coordinate_source?: string | null;
+  geometry_source?: string | null;
+  geo_precision?: string | null;
   articles?: BackendArticle[] | null;
 }
 
@@ -121,6 +123,9 @@ function mapBackendEvent(event: BackendEvent): DisasterEvent {
     latitude: event.latitude ?? null,
     longitude: event.longitude ?? null,
     geometryGeoJson: event.geometry_geojson ?? null,
+    coordinateSource: event.coordinate_source ?? null,
+    geometrySource: event.geometry_source ?? null,
+    geoPrecision: event.geo_precision ?? null,
     startDate: event.start_date ?? null,
     lastUpdate: event.last_update ?? event.start_date ?? null,
     severity: Math.max(0.35, Math.min(0.95, event.confidence_score ?? 0.55)),

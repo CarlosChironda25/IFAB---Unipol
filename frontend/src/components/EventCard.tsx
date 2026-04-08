@@ -42,7 +42,7 @@ export function EventCard({ event, isSelected, onSelect }: EventCardProps) {
 
       <dl>
         <div>
-          <dt>Data</dt>
+          <dt>Prima fonte</dt>
           <dd>{formatDate(event.startDate)}</dd>
         </div>
         <div>

@@ -5,7 +5,7 @@ import type { Customer, CustomerImpactAssessment, MapLayerMode } from '../../typ
 import type { DisasterEvent } from '../../types/event';
 import { assetTypeLabels, impactColors, vulnerabilityColors, vulnerabilityLabels } from '../../utils/customerMeta';
 import { eventTypeColors, eventTypeLabels } from '../../utils/eventColors';
-import { createGeoJsonFeature, extendBoundsWithEvent } from '../../utils/geojson';
+import { createGeoJsonFeature, extendBoundsWithEvent, getEventAnchor } from '../../utils/geojson';
 import { OperationalMapControls } from './OperationalMapControls';
 
 /*
@@ -221,21 +221,19 @@ export function OperationalMapView({
 
     if (mode !== 'customers') {
       const eventMarkers = events
-        .filter((event) => typeof event.latitude === 'number' && typeof event.longitude === 'number')
-        .map((event) => {
-          const content = createEventMarkerContent(event, event.id === focusedEventId);
+        .map((event) => ({ event, anchor: getEventAnchor(event) }))
+        .filter((entry) => Boolean(entry.anchor))
+        .map((entry) => {
+          const content = createEventMarkerContent(entry.event, entry.event.id === focusedEventId);
           const marker = new google.maps.marker.AdvancedMarkerElement({
-            position: {
-              lat: event.latitude as number,
-              lng: event.longitude as number,
-            },
+            position: entry.anchor as { lat: number; lng: number },
             content,
             gmpClickable: true,
           });
 
           bindMarkerSelection(marker, content, () => {
             onSelectedCustomerChange(null);
-            onFocusedEventChange(event.id);
+            onFocusedEventChange(entry.event.id);
           });
           marker.map = map;
           return marker;
@@ -345,8 +343,9 @@ export function OperationalMapView({
       return;
     }
 
-    if (typeof focusedEvent.latitude === 'number' && typeof focusedEvent.longitude === 'number') {
-      map.panTo({ lat: focusedEvent.latitude, lng: focusedEvent.longitude });
+    const anchor = getEventAnchor(focusedEvent);
+    if (anchor) {
+      map.panTo(anchor);
       if ((map.getZoom() ?? 0) < 9) {
         map.setZoom(9);
       }

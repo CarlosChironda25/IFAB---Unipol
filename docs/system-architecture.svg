@@ -1,0 +1,90 @@
+<svg width="1600" height="980" viewBox="0 0 1600 980" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="980" fill="#F4F1EA"/>
+  <rect x="40" y="40" width="1520" height="900" rx="28" fill="#FFFDF8" stroke="#D9D0C2" stroke-width="2"/>
+
+  <text x="80" y="105" fill="#17324D" font-family="Arial, sans-serif" font-size="34" font-weight="700">
+    IFAB - Unipol | Extreme Weather Intelligence Platform
+  </text>
+  <text x="80" y="145" fill="#4E6478" font-family="Arial, sans-serif" font-size="18">
+    Pipeline end-to-end per pre-allarme sinistri, geolocalizzazione eventi, esposizione clienti e supporto operativo ai periti
+  </text>
+
+  <rect x="80" y="200" width="300" height="220" rx="22" fill="#E6F1FB" stroke="#86A9C9" stroke-width="2"/>
+  <text x="108" y="245" fill="#17324D" font-family="Arial, sans-serif" font-size="24" font-weight="700">1. Fonti Esterne</text>
+  <text x="108" y="287" fill="#244A68" font-family="Arial, sans-serif" font-size="18">• ANSA e news di cronaca</text>
+  <text x="108" y="320" fill="#244A68" font-family="Arial, sans-serif" font-size="18">• Articoli recenti su eventi estremi</text>
+  <text x="108" y="353" fill="#244A68" font-family="Arial, sans-serif" font-size="18">• Dati semistrutturati da NewsAPI</text>
+  <text x="108" y="386" fill="#244A68" font-family="Arial, sans-serif" font-size="18">• Contenuti testuali da scraping</text>
+
+  <rect x="430" y="200" width="350" height="220" rx="22" fill="#FDEFD8" stroke="#D6AC5B" stroke-width="2"/>
+  <text x="458" y="245" fill="#6E4A13" font-family="Arial, sans-serif" font-size="24" font-weight="700">2. Ingestion Backend</text>
+  <text x="458" y="287" fill="#6E4A13" font-family="Arial, sans-serif" font-size="18">• Filtri anti-rumore e deduplica URL</text>
+  <text x="458" y="320" fill="#6E4A13" font-family="Arial, sans-serif" font-size="18">• Scraping mirato del corpo articolo</text>
+  <text x="458" y="353" fill="#6E4A13" font-family="Arial, sans-serif" font-size="18">• Scarto studi, report, previsioni</text>
+  <text x="458" y="386" fill="#6E4A13" font-family="Arial, sans-serif" font-size="18">• Persistenza su API FastAPI + DB SQLite</text>
+
+  <rect x="830" y="200" width="350" height="220" rx="22" fill="#E9F7EE" stroke="#6FAE83" stroke-width="2"/>
+  <text x="858" y="245" fill="#1B5B34" font-family="Arial, sans-serif" font-size="24" font-weight="700">3. AI Event Extraction</text>
+  <text x="858" y="287" fill="#1B5B34" font-family="Arial, sans-serif" font-size="18">• Classificazione tipo evento</text>
+  <text x="858" y="320" fill="#1B5B34" font-family="Arial, sans-serif" font-size="18">• Stima severità e confidence</text>
+  <text x="858" y="353" fill="#1B5B34" font-family="Arial, sans-serif" font-size="18">• Estrazione luoghi, micro-località, danni</text>
+  <text x="858" y="386" fill="#1B5B34" font-family="Arial, sans-serif" font-size="18">• Output JSON strutturato dal prompt</text>
+
+  <rect x="1230" y="200" width="290" height="220" rx="22" fill="#FCE9EA" stroke="#C97D82" stroke-width="2"/>
+  <text x="1258" y="245" fill="#7D2831" font-family="Arial, sans-serif" font-size="24" font-weight="700">4. Geo Engine</text>
+  <text x="1258" y="287" fill="#7D2831" font-family="Arial, sans-serif" font-size="18">• Geocoding contestuale</text>
+  <text x="1258" y="320" fill="#7D2831" font-family="Arial, sans-serif" font-size="18">• Vie, quartieri, frazioni</text>
+  <text x="1258" y="353" fill="#7D2831" font-family="Arial, sans-serif" font-size="18">• Poligono GeoJSON o fallback</text>
+  <text x="1258" y="386" fill="#7D2831" font-family="Arial, sans-serif" font-size="18">• Scarto eventi troppo vaghi</text>
+
+  <rect x="120" y="520" width="420" height="250" rx="24" fill="#F7F0FE" stroke="#A382C1" stroke-width="2"/>
+  <text x="150" y="565" fill="#4E2A73" font-family="Arial, sans-serif" font-size="26" font-weight="700">5. Data Layer</text>
+  <text x="150" y="608" fill="#4E2A73" font-family="Arial, sans-serif" font-size="18">• Eventi consolidati con stato new / updated / confirmed</text>
+  <text x="150" y="641" fill="#4E2A73" font-family="Arial, sans-serif" font-size="18">• Articoli associati e metadati sorgente</text>
+  <text x="150" y="674" fill="#4E2A73" font-family="Arial, sans-serif" font-size="18">• Clienti geolocalizzati e attributi di rischio</text>
+  <text x="150" y="707" fill="#4E2A73" font-family="Arial, sans-serif" font-size="18">• Mock per periti e capacità operative</text>
+  <text x="150" y="740" fill="#4E2A73" font-family="Arial, sans-serif" font-size="18">• Endpoint: /events, /customers, /run-ingestion</text>
+
+  <rect x="600" y="500" width="420" height="290" rx="24" fill="#EEF5E8" stroke="#85A36A" stroke-width="2"/>
+  <text x="630" y="545" fill="#35511D" font-family="Arial, sans-serif" font-size="26" font-weight="700">6. Operational Analytics</text>
+  <text x="630" y="588" fill="#35511D" font-family="Arial, sans-serif" font-size="18">• Matching eventi-clienti su poligono o raggio</text>
+  <text x="630" y="621" fill="#35511D" font-family="Arial, sans-serif" font-size="18">• Stima clienti impattati</text>
+  <text x="630" y="654" fill="#35511D" font-family="Arial, sans-serif" font-size="18">• Vulnerabilità per piano, cantina, tipologia immobile</text>
+  <text x="630" y="687" fill="#35511D" font-family="Arial, sans-serif" font-size="18">• Metratura ispezione stimata e ponderata</text>
+  <text x="630" y="720" fill="#35511D" font-family="Arial, sans-serif" font-size="18">• Fabbisogno periti a 7 / 15 giorni</text>
+  <text x="630" y="753" fill="#35511D" font-family="Arial, sans-serif" font-size="18">• Priorità: locali, riallocazione, outsourcing</text>
+
+  <rect x="1080" y="500" width="400" height="290" rx="24" fill="#E8F3FA" stroke="#6E9CBE" stroke-width="2"/>
+  <text x="1110" y="545" fill="#204B67" font-family="Arial, sans-serif" font-size="26" font-weight="700">7. Frontend Dashboard</text>
+  <text x="1110" y="588" fill="#204B67" font-family="Arial, sans-serif" font-size="18">• Mappa eventi / clienti / combinata</text>
+  <text x="1110" y="621" fill="#204B67" font-family="Arial, sans-serif" font-size="18">• Marker colorati per tipo evento e impatto</text>
+  <text x="1110" y="654" fill="#204B67" font-family="Arial, sans-serif" font-size="18">• Sidebar, dettagli evento, legenda, filtri</text>
+  <text x="1110" y="687" fill="#204B67" font-family="Arial, sans-serif" font-size="18">• Exposure summary e staffing recommendation</text>
+  <text x="1110" y="720" fill="#204B67" font-family="Arial, sans-serif" font-size="18">• Google Maps o fallback locale</text>
+  <text x="1110" y="753" fill="#204B67" font-family="Arial, sans-serif" font-size="18">• Supporto decisionale pre-sinistro</text>
+
+  <rect x="420" y="840" width="760" height="60" rx="18" fill="#17324D"/>
+  <text x="800" y="879" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="22" font-weight="700">
+    Obiettivo operativo: anticipare il dispatch dei periti e ridurre i tempi di intervento da 30 a 7-15 giorni
+  </text>
+
+  <path d="M380 310H430" stroke="#6C7A86" stroke-width="4" stroke-linecap="round"/>
+  <path d="M780 310H830" stroke="#6C7A86" stroke-width="4" stroke-linecap="round"/>
+  <path d="M1180 310H1230" stroke="#6C7A86" stroke-width="4" stroke-linecap="round"/>
+
+  <path d="M1375 420V470H330V520" stroke="#6C7A86" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1375 420V470H810V500" stroke="#6C7A86" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1375 420V470H1280V500" stroke="#6C7A86" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <path d="M540 645H600" stroke="#6C7A86" stroke-width="4" stroke-linecap="round"/>
+  <path d="M1020 645H1080" stroke="#6C7A86" stroke-width="4" stroke-linecap="round"/>
+
+  <circle cx="430" cy="310" r="6" fill="#6C7A86"/>
+  <circle cx="830" cy="310" r="6" fill="#6C7A86"/>
+  <circle cx="1230" cy="310" r="6" fill="#6C7A86"/>
+  <circle cx="330" cy="470" r="6" fill="#6C7A86"/>
+  <circle cx="810" cy="470" r="6" fill="#6C7A86"/>
+  <circle cx="1280" cy="470" r="6" fill="#6C7A86"/>
+  <circle cx="600" cy="645" r="6" fill="#6C7A86"/>
+  <circle cx="1080" cy="645" r="6" fill="#6C7A86"/>
+</svg>

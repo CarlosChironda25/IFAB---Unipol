@@ -35,6 +35,9 @@ export interface DisasterEvent {
   latitude?: number | null;
   longitude?: number | null;
   geometryGeoJson?: EventGeometry | null;
+  coordinateSource?: string | null;
+  geometrySource?: string | null;
+  geoPrecision?: string | null;
   startDate?: string | null;
   lastUpdate?: string | null;
   severity?: number | null;

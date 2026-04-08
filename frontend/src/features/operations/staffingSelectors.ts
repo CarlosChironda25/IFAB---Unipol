@@ -270,6 +270,7 @@ export function buildStaffingRecommendation(
 ): StaffingRecommendation {
   const assessmentsByCustomerId = new Map(assessments.map((assessment) => [assessment.customerId, assessment]));
   const impactedCustomers = customers.filter((customer) => assessmentsByCustomerId.get(customer.id)?.isImpacted);
+  const scenarioCenter = getScenarioCenter(impactedCustomers, focusedEvent, events);
   const weightedInspectionAreaSqm = impactedCustomers.reduce((sum, customer) => {
     const assessment = assessmentsByCustomerId.get(customer.id);
     return sum + customer.inspectionAreaSqm * getVulnerabilityWeight(assessment?.vulnerabilityHint ?? 'medium');
@@ -280,6 +281,34 @@ export function buildStaffingRecommendation(
       return sum + (customer.inspectionAreaSqm / 100) * getWorkloadCoefficient(customer);
     }, 0) +
     impactedCustomers.length * AVERAGE_TRAVEL_HOURS;
+  const allAssignments =
+    scenarioCenter === null
+      ? []
+      : surveyors.map((surveyor) => {
+          const distanceKm = haversineDistanceKm(
+            { lat: surveyor.latitude, lng: surveyor.longitude },
+            scenarioCenter
+          );
+
+          if (surveyor.kind === 'internal' && distanceKm <= LOCAL_ZONE_RADIUS_KM) {
+            return buildAssignment(surveyor, 'in-zone', scenarioCenter);
+          }
+
+          if (surveyor.kind === 'internal' && surveyor.mobility !== 'local') {
+            return buildAssignment(surveyor, 'relocation', scenarioCenter);
+          }
+
+          return buildAssignment(surveyor, 'outsourcing', scenarioCenter);
+        });
+  const localAssignments = allAssignments
+    .filter((assignment) => assignment.priority === 'in-zone')
+    .sort((left, right) => left.travelDays - right.travelDays || left.distanceKm - right.distanceKm);
+  const relocationAssignments = allAssignments
+    .filter((assignment) => assignment.priority === 'relocation')
+    .sort((left, right) => left.travelDays - right.travelDays || left.costIndex - right.costIndex);
+  const outsourcingAssignments = allAssignments
+    .filter((assignment) => assignment.priority === 'outsourcing')
+    .sort((left, right) => left.costIndex - right.costIndex || left.travelDays - right.travelDays);
 
   if (!impactedCustomers.length) {
     return {
@@ -289,12 +318,12 @@ export function buildStaffingRecommendation(
       workloadHours: 0,
       estimatedDamageAmount: 0,
       estimatedSavingsAmount: 0,
-      internalInZone: 0,
-      internalRelocatable: 0,
-      externalAvailable: surveyors.filter((surveyor) => surveyor.kind === 'external').length,
-      suggestedLocalAssignments: [],
-      suggestedRelocationAssignments: [],
-      suggestedOutsourcingAssignments: [],
+      internalInZone: localAssignments.length,
+      internalRelocatable: relocationAssignments.length,
+      externalAvailable: outsourcingAssignments.length,
+      suggestedLocalAssignments: localAssignments.slice(0, 4),
+      suggestedRelocationAssignments: relocationAssignments.slice(0, 4),
+      suggestedOutsourcingAssignments: outsourcingAssignments.slice(0, 4),
       targets: [
         {
           targetDays: TARGET_DAYS_SHORT,
@@ -315,8 +344,6 @@ export function buildStaffingRecommendation(
       ],
     };
   }
-
-  const scenarioCenter = getScenarioCenter(impactedCustomers, focusedEvent, events);
   const estimatedDamageAmount = impactedCustomers.reduce((sum, customer) => {
     return sum + estimatePropertyDamage(customer, damageScenario);
   }, 0);
@@ -369,33 +396,6 @@ export function buildStaffingRecommendation(
       ],
     };
   }
-
-  const allAssignments = surveyors.map((surveyor) => {
-    const distanceKm = haversineDistanceKm(
-      { lat: surveyor.latitude, lng: surveyor.longitude },
-      scenarioCenter
-    );
-
-    if (surveyor.kind === 'internal' && distanceKm <= LOCAL_ZONE_RADIUS_KM) {
-      return buildAssignment(surveyor, 'in-zone', scenarioCenter);
-    }
-
-    if (surveyor.kind === 'internal' && surveyor.mobility !== 'local') {
-      return buildAssignment(surveyor, 'relocation', scenarioCenter);
-    }
-
-    return buildAssignment(surveyor, 'outsourcing', scenarioCenter);
-  });
-
-  const localAssignments = allAssignments
-    .filter((assignment) => assignment.priority === 'in-zone')
-    .sort((left, right) => left.travelDays - right.travelDays || left.distanceKm - right.distanceKm);
-  const relocationAssignments = allAssignments
-    .filter((assignment) => assignment.priority === 'relocation')
-    .sort((left, right) => left.travelDays - right.travelDays || left.costIndex - right.costIndex);
-  const outsourcingAssignments = allAssignments
-    .filter((assignment) => assignment.priority === 'outsourcing')
-    .sort((left, right) => left.costIndex - right.costIndex || left.travelDays - right.travelDays);
 
   return {
     impactedCustomers: impactedCustomers.length,

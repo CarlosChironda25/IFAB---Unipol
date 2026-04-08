@@ -46,3 +46,45 @@ export function extendBoundsWithEvent(
     updateBoundsFromCoordinates(event.geometryGeoJson.coordinates, bounds);
   }
 }
+
+function collectGeometryPoints(
+  coordinates: EventGeometry['coordinates'],
+  points: Array<{ lat: number; lng: number }>
+): void {
+  if (typeof coordinates[0] === 'number') {
+    const [lng, lat] = coordinates as number[];
+    points.push({ lat, lng });
+    return;
+  }
+
+  for (const nested of coordinates as Array<EventGeometry['coordinates']>) {
+    collectGeometryPoints(nested, points);
+  }
+}
+
+export function getEventAnchor(event: DisasterEvent): { lat: number; lng: number } | null {
+  if (event.geometryGeoJson) {
+    const points: Array<{ lat: number; lng: number }> = [];
+    collectGeometryPoints(event.geometryGeoJson.coordinates, points);
+    if (points.length) {
+      const totals = points.reduce(
+        (accumulator, point) => ({
+          lat: accumulator.lat + point.lat,
+          lng: accumulator.lng + point.lng,
+        }),
+        { lat: 0, lng: 0 }
+      );
+
+      return {
+        lat: totals.lat / points.length,
+        lng: totals.lng / points.length,
+      };
+    }
+  }
+
+  if (typeof event.latitude === 'number' && typeof event.longitude === 'number') {
+    return { lat: event.latitude, lng: event.longitude };
+  }
+
+  return null;
+}

@@ -118,6 +118,18 @@ export function StaffingRecommendationPanel({
           <span>Metratura ponderata</span>
           <strong>{Math.round(recommendation.weightedInspectionAreaSqm)} mq</strong>
         </article>
+        <article>
+          <span>Interni in zona</span>
+          <strong>{recommendation.internalInZone}</strong>
+        </article>
+        <article>
+          <span>Interni riallocabili</span>
+          <strong>{recommendation.internalRelocatable}</strong>
+        </article>
+        <article>
+          <span>Esterni disponibili</span>
+          <strong>{recommendation.externalAvailable}</strong>
+        </article>
       </div>
 
       <div className="staffing-panel__targets">

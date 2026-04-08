@@ -60,11 +60,11 @@ export function EventDetails({ event }: EventDetailsProps) {
 
       <dl className="event-details__meta">
         <div>
-          <dt>Data inizio</dt>
+          <dt>Prima data articolo</dt>
           <dd>{formatDate(event.startDate)}</dd>
         </div>
         <div>
-          <dt>Ultimo aggiornamento</dt>
+          <dt>Ultima data articolo</dt>
           <dd>{formatDate(event.lastUpdate)}</dd>
         </div>
         <div>
@@ -78,6 +78,18 @@ export function EventDetails({ event }: EventDetailsProps) {
         <div>
           <dt>GeoJSON</dt>
           <dd>{event.geometryGeoJson ? event.geometryGeoJson.type : 'Assente'}</dd>
+        </div>
+        <div>
+          <dt>Precisione geo</dt>
+          <dd>{event.geoPrecision ?? 'Non dichiarata'}</dd>
+        </div>
+        <div>
+          <dt>Sorgente coordinate</dt>
+          <dd>{event.coordinateSource ?? 'Non disponibile'}</dd>
+        </div>
+        <div>
+          <dt>Sorgente geometria</dt>
+          <dd>{event.geometrySource ?? 'Fallback o non disponibile'}</dd>
         </div>
       </dl>
 
